@@ -1,0 +1,68 @@
+# Code — KIRC disulfidptosis signature
+
+Analysis and figure scripts that reproduce the manuscript. R ≥ 4.5; Python ≥ 3.9 for the data-fetch helpers.
+Figure scripts ending `_v2` produce the **submission figures**; non-`_v2` are the earlier draft versions, kept for provenance.
+`_style.R` defines the shared theme/palette and is sourced by the `_v2` figure scripts.
+
+## Reproducibility environment
+
+The repository root contains `sessionInfo.txt`, generated from the local R environment used for the submission package. It records the R version and installed versions of all packages referenced by `code/*.R`.
+
+To refresh this file after rerunning or moving the analysis environment:
+
+```bash
+Rscript code/write_session_info.R
+```
+
+No `renv.lock` is currently provided. If a locked environment is required for a later revision, initialise `renv` in the repository root and run `renv::snapshot()` from the R environment used to rerun the analyses.
+
+## Pipeline order
+
+| Step | Script | Produces |
+|---|---|---|
+| Initial analysis | `00_demo_initial_analysis.R` | disulfidptosis score, T/N test, first KM |
+| Prognosis core | `01_disulfidptosis_prognosis.R` | univariable Cox, 12-gene LASSO-Cox, risk score, time-ROC |
+| Subtypes + immune | `02_subtype_immune.R` | consensus clustering, subtype OS, immune contrast |
+| DEG + enrichment | `03_DEG_enrichment.R` | limma tumour-vs-normal DEGs, GO over-representation |
+| Internal validation | `internal_validation.R` | 70/30 split, locked-model test C-index |
+| External validation | `extval_cptac.R`, `external_validation_v2.R` | CPTAC RNA-seq + GSE29609 transfer |
+| ClearCode34 benchmark | `supp_cindex.R` | C-index vs ClearCode34 (Fig. 3D) |
+| GSEA | `supp_gsea_v2.R` | high/low-risk GSEA (Supplementary Fig. S1) |
+| Drug sensitivity | `run_gdsc.R`, `fig9_drug_v2.R` | oncoPredict GDSC2 IC50 by risk group |
+
+## Figure → script map (submission figures)
+
+| Figure | Script |
+|---|---|
+| Fig 1 landscape | `fig1_landscape_v2.R` |
+| Fig 2 prognosis + gene-class dissection | `fig3_prognosis_v2.R`, `subset_cyto_vs_metab.R` |
+| Fig 3 validation + ClearCode34 benchmark | `fig11_validation.R`, `supp_cindex.R` |
+| Fig 4 nomogram + subtype | `fig4_nomogram_v2.R`, `fig_dca.R`, `fig2_subtype_v2.R`, plus panel assembly in `assemble_v3.R` |
+| Fig 5 immune + ICB signatures + TMB | `fig5_immune_v2.R`, `fig_icb.R`, `fig_tmb.R` |
+| Fig 6 single-cell + WGCNA + candidates | `fig6_singlecell_v2.R`, `fig7_wgcna_v2.R`, `fig8_candidate_v2.R` |
+| Fig 7 drug + virtual KO | `fig9_drug_v2.R`, `fig10_virtualKO_v2.R` |
+| Suppl. S1 GSEA | `supp_gsea_v2.R` |
+| Suppl. S2 network organisation | `fig12_network.R` |
+| Suppl. S3 somatic mutation landscape | `fig_tmb.R` (`results/Fig_oncoplot.png`) |
+
+> Note: `assemble_v3.R` is the authoritative script for the submitted 7-figure layout. The older standalone
+> script names reflect the analysis history, not the final manuscript figure order.
+
+## Data-fetch helpers (Python)
+
+- `fetch_cptac.py`, `fetch_cptac_gdc_os.py` — CPTAC ccRCC expression (cBioPortal) + OS follow-up (GDC, CPTAC-3).
+- `fetch_cc34_cptac.py` — ClearCode34 gene panel for the benchmark.
+- `verify_refs.py` — CrossRef DOI verification of the reference list.
+
+## Data sources (not redistributed here — public)
+
+- **TCGA-KIRC** expression / survival / clinical: UCSC Xena (https://xenabrowser.net).
+- **scRNA-seq** ccRCC: GEO **GSE159115**.
+- **CPTAC** ccRCC: cBioPortal study `rcc_cptac_gdc` + GDC project CPTAC-3 (OS).
+- **GSE29609** (two-colour array, platform-mismatch cohort): GEO.
+- **GDSC2** drug response: Genomics of Drug Sensitivity in Cancer.
+
+## Not used in the manuscript
+
+- `mr_disulfidptosis.R` — Mendelian-randomisation attempt; **shelved** (SLC7A11 not expressed in blood eQTL,
+  testable genes null, concept mismatch). Kept for provenance only; no MR result appears in the paper.
